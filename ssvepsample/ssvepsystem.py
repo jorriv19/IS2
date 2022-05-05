@@ -6,7 +6,7 @@ from ezmsg.eeg.openbci import (
     OpenBCISourceSettings
 )
 
-from .injector import Injector #.injector will only work in a python module
+from .injector import Injector, InjectorSettings #.injector will only work in a python module
 
 class DebugPrint( ez.Unit):
     INPUT = ez.InputStream( ez.Message)
@@ -35,7 +35,13 @@ class SSVEPSystem( ez.System ):
                 blocksize = 50
                 ) 
         )
+        self.INJECTOR.apply_settings(
+            InjectorSettings(
+                freq = 7.0
+            )
+        )
 
+    
     def network( self ) -> ez.NetworkDefinition:
         return (
             #( self.SOURCE.OUTPUT_SIGNAL, self.DEBUG.INPUT ),
