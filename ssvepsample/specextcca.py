@@ -1,5 +1,6 @@
-import numpy as np
+
 import ezmsg.core as ez
+import numpy as np 
 
 from sklearn.cross_decomposition import CCA
 
@@ -18,8 +19,7 @@ class SpectralExtractorSettings(ez.Settings):
     pass
 
 class SpectralextractorState(ez.State): 
-    # In state we want to include the SAMPLING RATE of the incoming message from eegmessage.
-    info: Optional[EEGInfoMessage] = None
+    # TODO: check this, cant see big picture with settings and state of this unit. 
     # Calling the type of sampFreq and setting the intial value to None.
     sampFreq: Optional[float] = None #
    
@@ -37,7 +37,12 @@ class SpectralExtractor(ez.Unit):
 
     @ez.subscriber(INPUT_SIGNAL) 
     @ez.publisher(OUTPUT_DECODE) 
-    async def extract(self, message: EEGMessage) -> AsyncGenerator:
-
-
-            yield (self.OUTPUT_DECODE, TransformOutput(output=))
+    async def extract(self, msg: EEGMessage) -> AsyncGenerator:
+        cca = CCA(n_components=1)
+        # Fit the CCA data on the training data set, which can be from
+        # our injector unit if appropriate in the future. 
+        cca.fit(msg.n_time, msg.data)
+        t_cca, f_cca = cca.transform(msg.n_time, msg.data)
+        print(f_cca)
+        # Our frequency of interest should be f_cca
+        yield (self.OUTPUT_DECODE, TransformOutput(f_cca))
