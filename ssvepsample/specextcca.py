@@ -54,9 +54,10 @@ class SpectralExtractor(ez.Unit):
             for h in harm_idx:
                 Y.append(np.sin(2*np.pi*f*h*time))
                 Y.append(np.cos(2*np.pi*f*h*time))
-
+        Y = np.array(Y).T
         cca.fit( msg.data, Y )
         A, B = cca.transform(msg.data, Y ) 
+        
         print("this is the first output: " + str(A))
         print("this is the second output: "+ str(B))
         # Our frequency of interest should be f_cca
