@@ -24,10 +24,10 @@ class Injector( ez.Unit ):
     STATE: InjectorState
 
     INPUT_SIGNAL = ez.InputStream( EEGMessage )
-    OUTPUT_SIGNAL = ez.OutputStream( EEGMessage )
+    OUTPUT_DECODE = ez.OutputStream( EEGMessage )
 
     @ez.subscriber( INPUT_SIGNAL )
-    @ez.publisher( OUTPUT_SIGNAL )
+    @ez.publisher( OUTPUT_DECODE )
     async def inject( self, msg: EEGMessage) -> AsyncGenerator:
         
         t = (np.arange( msg.n_time) + self.STATE.cur_sample)/msg.fs
@@ -38,4 +38,4 @@ class Injector( ez.Unit ):
 
         # Nice to have: reset counter  of cur sample by checking if the below is close to zero. 
         # if (2*np.pi * self.SETTINGS.freq * t * self.STATE.cur_sample)/msg.fs
-        yield ( self.OUTPUT_SIGNAL, replace( msg, data = output) )
+        yield ( self.OUTPUT_DECODE, replace( msg, data = output) )

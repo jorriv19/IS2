@@ -8,19 +8,22 @@ from ezmsg.eeg.eegmessage import EEGMessage
 
 from typing import (
     Optional,
-    AsyncGenerator, 
+    AsyncGenerator,
+    List 
 )
+from dataclasses import(field)
 
-class TransformOutput(EEGMessage):
+
+class TransformOutput(ez.Message):
     # Stamped message: Message that gets a time stamp when created.
-    output: np.ndarray
+    output: float
 
 class SpectralExtractorSettings(ez.Settings):
-    pass
+    #Set our frequencies of interest to be selected from, and harmonics we'd like to check. 
+    freqoi: List[float] #= field( default_factory = list([7, 9, 13]) )
+    n_harm: int #= 3
 
 class SpectralextractorState(ez.State): 
-    # TODO: check this, cant see big picture with settings and state of this unit. 
-    # Calling the type of sampFreq and setting the intial value to None.
     sampFreq: Optional[float] = None #
    
 
@@ -29,7 +32,7 @@ class SpectralExtractor(ez.Unit):
     Performs a CCA on data collected from EEG channels.
     
     """
-    #SETTINGS: SpectralExtractorSettings
+    SETTINGS: SpectralExtractorSettings
     STATE: SpectralextractorState
 
     INPUT_SIGNAL = ez.InputStream(EEGMessage)
@@ -39,10 +42,22 @@ class SpectralExtractor(ez.Unit):
     @ez.publisher(OUTPUT_DECODE) 
     async def extract(self, msg: EEGMessage) -> AsyncGenerator:
         cca = CCA(n_components=1)
+        # TODO: make a check for which freq from freqoi is closest to the input data
         # Fit the CCA data on the training data set, which can be from
         # our injector unit if appropriate in the future. 
-        cca.fit(msg.n_time, msg.data)
-        t_cca, f_cca = cca.transform(msg.n_time, msg.data)
-        print(f_cca)
+        Y =[]
+        time = np.arange(msg.n_time)/msg.fs
+        harm_idx = []
+        harm_idx.extend(range(1,(SpectralExtractorSettings.n_harm)))
+        
+        for f in SpectralExtractorSettings.freqoi:
+            for h in harm_idx:
+                Y.append(np.sin(2*np.pi*f*h*time))
+                Y.append(np.cos(2*np.pi*f*h*time))
+
+        cca.fit( msg.data, Y )
+        A, B = cca.transform(msg.data, Y ) 
+        print("this is the first output: " + str(A))
+        print("this is the second output: "+ str(B))
         # Our frequency of interest should be f_cca
-        yield (self.OUTPUT_DECODE, TransformOutput(f_cca))
+        yield (self.OUTPUT_DECODE, TransformOutput(A))
