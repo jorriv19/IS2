@@ -20,8 +20,8 @@ class TransformOutput(ez.Message):
 
 class SpectralExtractorSettings(ez.Settings):
     #Set our frequencies of interest to be selected from, and harmonics we'd like to check. 
-    freqoi: List[float] #= field( default_factory = list([7, 9, 13]) )
-    n_harm: int #= 3
+    freqoi: List[float] = field( default_factory = list([7, 9, 13]) )
+    n_harm: int = 3
 
 class SpectralextractorState(ez.State): 
     sampFreq: Optional[float] = None #

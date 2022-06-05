@@ -45,8 +45,8 @@ class SSVEPSystem( ez.System ):
         )
         self.EXTRACTOR.apply_settings(
             SpectralExtractorSettings(
-                freqoi = field( default_factory = list([7, 9, 13]) ), 
-                n_harm = 3
+                freqoi = [7, 9, 13], 
+                n_harm = 3 
             )
         )
 
