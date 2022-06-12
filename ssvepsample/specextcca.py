@@ -41,24 +41,23 @@ class SpectralExtractor(ez.Unit):
     @ez.subscriber(INPUT_SIGNAL) 
     @ez.publisher(OUTPUT_DECODE) 
     async def extract(self, msg: EEGMessage) -> AsyncGenerator:
-        cca = CCA(n_components=1)
-        # TODO: make a check for which freq from freqoi is closest to the input data
-        # Fit the CCA data on the training data set, which can be from
-        # our injector unit if appropriate in the future. 
-        Y =[]
-        time = np.arange(msg.n_time)/msg.fs
-        harm_idx = []
-        harm_idx.extend(range(1,(SpectralExtractorSettings.n_harm)))
+        cca = CCA(n_components=3)
         
-        for f in SpectralExtractorSettings.freqoi:
+        time = np.arange(msg.n_time)/msg.fs
+        harm_idx = (np.arange(self.SETTINGS.n_harm)+1)
+        
+        allcores = []
+        for f in self.SETTINGS.freqoi:
+            Y =[]
             for h in harm_idx:
                 Y.append(np.sin(2*np.pi*f*h*time))
                 Y.append(np.cos(2*np.pi*f*h*time))
-        Y = np.array(Y).T
-        cca.fit( msg.data, Y )
-        A, B = cca.transform(msg.data, Y ) 
+            Y = np.array(Y).T
+            A, B = cca.fit_transform(msg.data, Y ) 
+            corrs = [np.corrcoef(A[:, i], B[:, i])[0, 1] for i in range(cca.n_components)]
+            allcores.append(corrs[0])
         
-        print("this is the first output: " + str(A))
-        print("this is the second output: "+ str(B))
+        max_freq = self.SETTINGS.freqoi[np.argmax(allcores)]
+        
         # Our frequency of interest should be f_cca
-        yield (self.OUTPUT_DECODE, TransformOutput(A))
+        yield (self.OUTPUT_DECODE, TransformOutput(max_freq))

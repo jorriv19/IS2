@@ -5,6 +5,12 @@ from ezmsg.eeg.openbci import (
     OpenBCISource, 
     OpenBCISourceSettings
 )
+
+from ezmsg.sigproc.window import(
+    Window,
+    WindowSettings
+)
+
 from dataclasses import(field)
 
 from .injector import Injector, InjectorSettings 
@@ -29,6 +35,7 @@ class SSVEPSystem( ez.System ):
     INJECTOR = Injector()
     DEBUG = DebugPrint()
     EXTRACTOR = SpectralExtractor()
+    WINDOW = Window()
 
 
     def configure( self ) -> None:
@@ -40,7 +47,7 @@ class SSVEPSystem( ez.System ):
         )
         self.INJECTOR.apply_settings(
             InjectorSettings(
-                freq = 7.0
+                freq = 13
             )
         )
         self.EXTRACTOR.apply_settings(
@@ -49,12 +56,19 @@ class SSVEPSystem( ez.System ):
                 n_harm = 3 
             )
         )
+        self.WINDOW.apply_settings(
+            WindowSettings(
+                window_dur=2, 
+                window_shift=1
+            )
+        )
 
     
     def network( self ) -> ez.NetworkDefinition:
         return (
             #( self.SOURCE.OUTPUT_SIGNAL, self.DEBUG.INPUT ),
-            ( self.SOURCE.OUTPUT_SIGNAL, self.INJECTOR.INPUT_SIGNAL ), 
+            ( self.SOURCE.OUTPUT_SIGNAL, self.WINDOW.INPUT_SIGNAL),
+            ( self.WINDOW.OUTPUT_SIGNAL, self.INJECTOR.INPUT_SIGNAL ), 
             ( self.INJECTOR.OUTPUT_DECODE, self.EXTRACTOR.INPUT_SIGNAL), 
             ( self.EXTRACTOR.OUTPUT_DECODE,  self.DEBUG.INPUT )
         )
