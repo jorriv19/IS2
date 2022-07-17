@@ -74,9 +74,5 @@ class SpectralExtractor(ez.Unit):
         
         max_freq = self.SETTINGS.freqoi[np.argmax(allcores)]
         
-<<<<<<< HEAD
         # Our frequency of interest should be f_cca
         yield (self.OUTPUT_DECODE, TransformOutput(max_freq))
-=======
-        yield (self.OUTPUT_DECODE, TransformOutput(max_freq))
->>>>>>> dc713cb7979a16dd5e36052845db59b4b1f81957
