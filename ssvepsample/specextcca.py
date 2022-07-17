@@ -41,7 +41,7 @@ class SpectralExtractor(ez.Unit):
     @ez.subscriber(INPUT_SIGNAL) 
     @ez.publisher(OUTPUT_DECODE) 
     async def extract(self, msg: EEGMessage) -> AsyncGenerator:
-        cca = CCA(n_components=3)
+        cca = CCA(n_components=2)
         
         time = np.arange(msg.n_time)/msg.fs
         harm_idx = (np.arange(self.SETTINGS.n_harm)+1)

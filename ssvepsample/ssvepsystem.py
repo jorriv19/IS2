@@ -24,7 +24,7 @@ class DebugPrint( ez.Unit):
 
 
 class SSVEPSystemSettings(ez.Settings):
-    device: str
+    openbci_settings: OpenBCISourceSettings
 
 
 class SSVEPSystem( ez.System ):
@@ -39,12 +39,7 @@ class SSVEPSystem( ez.System ):
 
 
     def configure( self ) -> None:
-        self.SOURCE.apply_settings( 
-            OpenBCISourceSettings(
-                device = self.SETTINGS.device,
-                blocksize = 50
-                ) 
-        )
+        self.SOURCE.apply_settings( self.SETTINGS.openbci_settings )
         self.INJECTOR.apply_settings(
             InjectorSettings(
                 freq = 13
